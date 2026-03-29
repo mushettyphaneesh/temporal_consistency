@@ -1,250 +1,156 @@
-# Temporal Consistency Studio
+# Enforcing Temporal Consistency in AI-Generated Videos through Analysis-Guided Regeneration
+---
 
-A web application implementing the pipeline from the research paper:
+## Overview
 
-**"Enforcing Temporal Consistency in AI-Generated Videos through Analysis-Guided Regeneration"**  
-*Dr. Anil Kumar, Phaneesh Mushetty, Sai Teja Nimmala — CMR College of Engineering and Technology, ICDSCNC 2026*
+Text-to-video diffusion models (AnimateDiff, ModelScope, VideoCrafter2) generate visually appealing video but suffer from temporal artifacts — flickering textures, unstable motion, and inconsistent color transitions across frames. This project implements a **retraining-free post-processing pipeline** that enforces temporal consistency on any AI-generated video without modifying the underlying generation model.
 
 ---
 
-## What This Project Does
+## How It Works
 
-AI-generated videos suffer from temporal artifacts — flickering textures, unstable motion, inconsistent lighting across frames. This app implements the paper's retraining-free post-processing pipeline to fix those artifacts:
+The pipeline operates as an outer enhancement layer on top of a frozen base generator. No parameters of the generator are modified at any point.
 
-1. Upload an AI-generated video
-2. The system extracts frames and analyzes scene semantics + temporal issues
-3. A refined structured prompt P\* is generated (Eq. 4 from the paper)
-4. A video generation model regenerates the video using P\* as a conditioning signal (Eq. 5)
-5. The temporally consistent output is returned for download
+### Pipeline Stages
 
-No model retraining. No parameter modification. The base generator stays frozen throughout.
+**Stage 1 — Frame Decomposition**
+
+The input video V is split into individual frames:
+
+```
+V = {f₁, f₂, ..., fₙ}
+```
+
+Frames are normalized on color space and resolution.
+
+**Stage 2 — Semantic Embedding (Eq. 2)**
+
+Each frame is passed through a pretrained vision-language encoder (CLIP ViT-B/32) to extract semantic features:
+
+```
+sᵢ = Φ(fᵢ)
+```
+
+A global semantic representation is obtained by averaging frame-level embeddings:
+
+```
+S = (1/n) Σᵢ sᵢ
+```
+
+This captures consistent object identities, scene context, and appearance attributes across time.
+
+**Stage 3 — Prompt Refinement (Eq. 4)**
+
+Technical attributes T (camera motion type, lighting cues, temporal pacing) are extracted alongside S. A refined structured prompt is generated:
+
+```
+P* = Ψ(S, T)
+```
+
+P* encodes stabilized scene attributes — consistent lighting, object continuity — and serves as the conditioning signal for regeneration.
+
+**Stage 4 — Video Regeneration (Eq. 5)**
+
+P* is sent to the original frozen generator G in Video-to-Video conditioned mode, using original frames as spatial anchors:
+
+```
+V' = G(P*)
+```
+
+The base generator used in experiments is ModelScope. No retraining or parameter modification is performed on G.
+
+**Stage 5 — Temporal Alignment (Eq. 6)**
+
+Residual inter-frame irregularities are removed using optical flow-based frame alignment (RAFT):
+
+```
+Lₜ = Σᵢ ‖v'ᵢ₊₁ − warp(v'ᵢ, mᵢ)‖²
+```
+
+This penalizes inter-frame disturbances and suppresses flickering artifacts.
+
+**Stage 6 — Iterative Frame Correction (Eq. 7)**
+
+The total objective balances temporal stability with spatial fidelity:
+
+```
+L = Lₜ + λ · L_spatial
+```
+
+Hyperparameters validated on held-out set: λ = 0.6, α = 0.4, β = 0.3.
 
 ---
 
-## Architecture
+## Algorithm
 
 ```
-User Browser
-    │
-    ▼
-Flask App (app.py)
-    │
-    ├──► Analysis Backend ──► Scene semantics, temporal issues, refined prompt P*
-    │
-    └──► Video Generation Backend ──► Regenerated temporally consistent video
+Input:  AI-generated video V = {f₁, f₂, ..., fₙ}
+Output: Temporally consistent video V'
+
+1.  Decompose V into individual frames {f₁, ..., fₙ}
+2.  For each frame fᵢ:
+      a. Extract semantic embedding sᵢ = Φ(fᵢ)  [CLIP]
+      b. Extract motion features mᵢ from (fᵢ, fᵢ₊₁)
+3.  Aggregate global representation: S = (1/n) Σ sᵢ
+4.  Estimate inter-frame motion properties and technical attributes T
+5.  Generate refined prompt: P* = Ψ(S, T)
+6.  Regenerate video with frozen model: V' = G(P*)  [ModelScope]
+7.  For each consecutive frame pair (v'ᵢ, v'ᵢ₊₁) in V':
+      a. Apply motion-guided temporal alignment
+      b. Minimize temporal loss: Lₜ = ‖v'ᵢ₊₁ − warp(v'ᵢ, mᵢ)‖²
+8.  Apply iterative frame correction to remove residual flicker
+9.  Minimize total objective: L = Lₜ + λ · L_spatial
+10. Return V'
 ```
 
-The analysis and generation backends are **swappable**. The app supports two modes:
+### Results
+
+The proposed framework showed consistent improvement across all five metrics compared to:
+- **Blind Video Consistency (BVC)** — optical flow-based alignment and smoothing
+- **Rolling Guidance Refinement** — iterative consistency correction
+
+Warping Error was reduced by **28%**, validating the motion-aware alignment stage. FVD drop confirmed the regenerated video distribution moved closer to real video statistics.
 
 ---
 
-## Backend Modes
+## Comparison with Existing Methods
 
-### Mode 1 — Google APIs (Cloud, No Local Hardware Required)
-
-Uses Google Gemini for frame analysis and Google Veo for video generation. No GPU needed. Runs on any machine.
-
-| Stage | Model |
-|---|---|
-| Frame analysis + prompt refinement (Eq. 2–4) | `gemini-2.0-flash` |
-| Video regeneration (Eq. 5) | `veo-2.0-generate-001` |
-
-**Setup:**
-```bash
-pip install flask opencv-python google-genai python-dotenv
-```
-
-`.env`:
-```
-GOOGLE_API_KEY=your_key_here
-BACKEND=google
-```
-
-### Mode 2 — Local Models (Full Research Pipeline)
-
-Uses CLIP for semantic embeddings, RAFT for optical flow-based temporal alignment, and ModelScope as the base video generator. Requires a GPU.
-
-| Stage | Model | Paper Reference |
-|---|---|---|
-| Semantic embedding Φ(fᵢ) — Eq. 2 | CLIP (ViT-B/32) | §III |
-| Optical flow / motion features | RAFT | §III |
-| Video regeneration G(P\*) — Eq. 5 | ModelScope | §III |
-
-**Setup:**
-```bash
-pip install flask opencv-python torch torchvision transformers diffusers python-dotenv
-```
-
-`.env`:
-```
-BACKEND=local
-```
-
-### Mode 3 — Claude API (Anthropic)
-
-Uses Claude's vision capability for frame analysis and prompt refinement. Pair with any video generation backend for the regeneration step.
-
-| Stage | Model |
-|---|---|
-| Frame analysis + prompt refinement (Eq. 2–4) | `claude-sonnet-4-5` or `claude-opus-4-5` |
-| Video regeneration (Eq. 5) | Google Veo or local ModelScope |
-
-**Setup:**
-```bash
-pip install flask opencv-python anthropic python-dotenv
-```
-
-`.env`:
-```
-ANTHROPIC_API_KEY=your_key_here
-BACKEND=claude
-VIDEO_BACKEND=google   # or local
-GOOGLE_API_KEY=your_key_here   # only if VIDEO_BACKEND=google
-```
-
-**Why Claude:** Claude's vision model performs strong scene understanding, can reason about temporal artifacts across multiple frames simultaneously, and produces structured prompt refinements well-suited for video conditioning.
-
----
-
-## Paper → Code Mapping
-
-| Paper | Equation | Implementation |
-|---|---|---|
-| Frame decomposition | Eq. 1 | `extract_frames()` in `app.py` |
-| Semantic embedding per frame | Eq. 2 | Gemini / CLIP / Claude vision call |
-| Global semantic aggregation | Eq. 3 | Averaged embeddings or aggregated Gemini analysis |
-| Refined prompt P\* generation | Eq. 4 | `analyze_video()` — returns `refined_prompt` field |
-| Video regeneration with frozen G | Eq. 5 | `regenerate_video()` — Veo or ModelScope call |
-| Temporal loss minimization | Eq. 6 | Optical flow alignment (local mode) / Gemini-guided (cloud mode) |
-| Total objective | Eq. 7 | λ = 0.6, α = 0.4, β = 0.3 (empirically validated) |
-
----
-
-## Project Structure
-
-```
-temporal-consistency-studio/
-├── app.py                  # Flask backend — all routes and API logic
-├── video_prompt.py         # CLI version of the same pipeline
-├── templates/
-│   └── index.html          # Single-page UI
-├── static/
-│   └── style.css
-├── outputs/                # Generated videos saved here
-├── uploads/                # Temp storage, cleaned after processing
-├── backends/
-│   ├── google_backend.py   # Gemini + Veo implementation
-│   ├── claude_backend.py   # Claude + Veo/ModelScope implementation
-│   └── local_backend.py    # CLIP + RAFT + ModelScope implementation
-└── .env
-```
-
----
-
-## Flask Routes
-
-| Route | Method | Purpose |
-|---|---|---|
-| `/` | GET | Main UI |
-| `/analyze` | POST | Upload video → extract frames → return analysis JSON |
-| `/refine` | POST | Re-analyze with user feedback |
-| `/regenerate` | POST | Send P\* to video generator → poll → save output |
-| `/download/<filename>` | GET | Stream back generated video |
-
----
-
-## The 4-Step User Flow
-
-**Step 1 — Upload**  
-Drag and drop an AI-generated `.mp4` (up to 100MB). 5 evenly-spaced frames are extracted from the video.
-
-**Step 2 — Analyze**  
-Frames are sent to the analysis backend. Returns:
-- `scene_description` — stable scene attributes
-- `detected_objects` — objects with consistent properties
-- `temporal_issues` — identified flickering, color shifts, texture instability
-- `refined_prompt` — the structured P\* conditioning signal
-- `motion_type` — camera motion description
-- `lighting_cues` — dominant lighting conditions
-
-**Step 3 — Refine (optional)**  
-User can add feedback to further guide prompt refinement. The backend re-runs analysis with the feedback appended.
-
-**Step 4 — Regenerate**  
-P\* is sent to the video generation backend. User selects duration (4s / 8s) and aspect ratio (16:9 / 9:16). The regenerated video is returned for preview and download.
-
----
-
-## CLI Usage
-
-```bash
-# Google backend
-python video_prompt.py --video_path myvideo.mp4 --backend google --generate-video --duration 6
-
-# Claude backend
-python video_prompt.py --video_path myvideo.mp4 --backend claude --generate-video --duration 4
-
-# Local models
-python video_prompt.py --video_path myvideo.mp4 --backend local --generate-video --aspect-ratio 16:9
-
-# Save extracted prompt only
-python video_prompt.py --video_path myvideo.mp4 --backend google --output prompt.txt
-```
-
----
-
-## Results (from the paper)
-
-Evaluated on 200 clips (512×512, 64 frames) generated by Stable Video Diffusion v2 using UCF-101 action prompts.
-
-| Metric | Baseline | Proposed Framework | Improvement |
+| Method | Category | Retraining | Limitation |
 |---|---|---|---|
-| PSNR ↑ | — | Higher | Reduced frame-level noise |
-| SSIM ↑ | — | Higher | Better structural consistency |
-| LPIPS ↓ | — | Lower | Improved perceptual consistency |
-| Warping Error ↓ | — | −28% | Better inter-frame alignment |
-| FVD ↓ | — | Lower | Closer to real video distribution |
-
-Outperforms baselines: Blind Video Consistency (BVC) and Rolling Guidance Refinement across all five metrics.
-
----
-
-## Requirements Summary
-
-| Dependency | All Modes | Google Mode | Claude Mode | Local Mode |
-|---|---|---|---|---|
-| `flask` | ✓ | ✓ | ✓ | ✓ |
-| `opencv-python` | ✓ | ✓ | ✓ | ✓ |
-| `python-dotenv` | ✓ | ✓ | ✓ | ✓ |
-| `google-genai` | | ✓ | optional | |
-| `anthropic` | | | ✓ | |
-| `torch`, `torchvision` | | | | ✓ |
-| `transformers`, `diffusers` | | | | ✓ |
+| Video Diffusion with Temporal Attention | Model-level | Yes | High training cost, model-specific |
+| Space-Time Transformer Generators | Model-level | Yes | Requires large-scale datasets |
+| Motion-Guided Diffusion | Model-level | Yes | Error propagation in complex scenes |
+| Blind Video Consistency (BVC) | Post-processing | No | Struggles with large motion changes |
+| Deep Video Prior (DVP) | Post-processing | No | Computationally expensive |
+| Rolling Guidance Refinement | Post-processing | No | Slow for long videos |
+| **Proposed Framework** | **Post-generation** | **No** | Depends on base generator quality |
 
 ---
 
-## Running the App
+## Key Properties
+
+- **Model-agnostic** — works with any frozen video generation architecture
+- **Retraining-free** — no parameter updates to the base generator
+- **Three contributions:**
+  1. Semantic-guided prompt refinement pipeline (aggregates scene-level features to reduce regeneration ambiguity)
+  2. Motion-semantically aware temporal alignment (inhibits inter-frame difference)
+  3. Iterative frame correction cycle (eliminates residual flicker while preserving spatial faithfulness)
+
+---
+
+## Dependencies
 
 ```bash
-# Install dependencies for your chosen backend
-pip install -r requirements-google.txt   # or requirements-claude.txt / requirements-local.txt
-
-# Set up .env with your backend choice and API keys
-cp .env.example .env
-
-# Run
-python app.py
-# → http://localhost:5000
+pip install torch torchvision opencv-python transformers diffusers
 ```
+
+| Package | Purpose |
+|---|---|
+| `torch`, `torchvision` | Core deep learning |
+| `opencv-python` | Frame extraction and processing |
+| `transformers` | CLIP semantic encoder |
+| `diffusers` | ModelScope video generation |
 
 ---
 
-## Citation
 
-If you use this implementation, please cite the original paper:
-
-```
-Dr. Anil Kumar, Phaneesh Mushetty, Sai Teja Nimmala.
-"Enforcing Temporal Consistency in AI-Generated Videos through Analysis-Guided Regeneration."
-ICDSCNC 2026, CMR College of Engineering and Technology, Hyderabad.
-```
