@@ -169,3 +169,18 @@ pip install torch torchvision opencv-python transformers diffusers
 
 ---
 
+## UI Walkthrough
+
+### Step 1: Upload Video
+![Upload AI-Generated Video](screenshots/1_upload.png)
+
+### Step 2: Semantic Analysis
+![Semantic Analysis Results](screenshots/2_analysis.png)
+
+### Step 3: Prompt Refinement & Regeneration
+![Prompt Refinement & Regeneration](screenshots/3_regenerate.png)
+
+### Step 4: Temporally Consistent Video
+![Temporally Consistent Video](screenshots/4_result.png)
+
+---
