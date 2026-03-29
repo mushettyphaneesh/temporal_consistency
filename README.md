@@ -3,7 +3,7 @@
 A web application implementing the pipeline from the research paper:
 
 **"Enforcing Temporal Consistency in AI-Generated Videos through Analysis-Guided Regeneration"**  
-*Dr. Anil Kumar, Phaneesh Mushetty, Sai Teja Nimmala — CMR College of Engineering and Technology, ICDSCNC 2026*
+*Dr. Anil Kumar, Phaneesh Mushetty, Sai Teja Nimmala — CMR College of Engineering and Technology*
 
 ---
 
@@ -21,18 +21,7 @@ No model retraining. No parameter modification. The base generator stays frozen 
 
 ---
 
-## Architecture
 
-```
-User Browser
-    │
-    ▼
-Flask App (app.py)
-    │
-    ├──► Analysis Backend ──► Scene semantics, temporal issues, refined prompt P*
-    │
-    └──► Video Generation Backend ──► Regenerated temporally consistent video
-```
 
 The analysis and generation backends are **swappable**. The app supports two modes:
 
