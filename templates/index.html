@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Temporal Consistency Studio — Analysis-Guided Video Regeneration</title>
-  <meta name="description" content="AI tool that enforces temporal consistency in AI-generated videos through Gemini semantic analysis and Veo regeneration.">
+  <meta name="description" content="AI tool that enforces temporal consistency in AI-generated videos through semantic analysis and guided regeneration.">
   <link rel="stylesheet" href="/static/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -135,7 +135,7 @@
       <div class="progress-bar">
         <div class="progress-fill animated" id="analysis-progress-fill"></div>
       </div>
-      <div class="progress-label" id="analysis-progress-label">Analyzing with Gemini…</div>
+      <div class="progress-label" id="analysis-progress-label">Analyzing frames…</div>
     </div>
 
     <button class="btn-primary" id="analyze-btn" disabled>
@@ -148,7 +148,7 @@
       </span>
       <span class="btn-loading hidden">
         <span class="spinner"></span>
-        Analyzing with Gemini...
+        Analyzing frames...
       </span>
     </button>
   </section>
@@ -158,7 +158,7 @@
     <div class="card-header">
       <div class="step-tag">Step 02 · Equations 2, 3, 4</div>
       <h2>Semantic Analysis Results</h2>
-      <p class="card-desc">Gemini analyzed the video frames and identified scene attributes, temporal inconsistencies, and generated a consistency-enforcing prompt P*.</p>
+      <p class="card-desc">The analysis model processed the video frames and identified scene attributes, temporal inconsistencies, and generated a consistency-enforcing prompt P*.</p>
     </div>
 
     <div class="analysis-grid">
@@ -240,7 +240,7 @@
       <div class="panel-header">
         <div class="step-tag">Step 03 · Optional</div>
         <h3>Refine the Prompt</h3>
-        <p>Add feedback to further adjust P* — Gemini will re-analyze with your instructions.</p>
+        <p>Add feedback to further adjust P* — the analysis model will re-analyze with your instructions.</p>
       </div>
       <div class="feedback-row">
         <input type="text" id="feedback-input" class="feedback-input" placeholder="e.g. make lighting warmer, reduce camera shake, make colors more vivid...">
@@ -262,7 +262,7 @@
     <div class="card-header">
       <div class="step-tag">Step 04 · Equation 5</div>
       <h2>Regenerate — Temporally Consistent Video</h2>
-      <p class="card-desc">The refined prompt P* is sent to Veo-2 to generate a temporally consistent video. Generation takes 1–3 minutes.</p>
+      <p class="card-desc">The refined prompt P* is sent to the generation model to produce a temporally consistent video. Generation takes 1–3 minutes.</p>
     </div>
 
     <div class="gen-options">
@@ -294,7 +294,7 @@
 
     <!-- Prompt preview before generation -->
     <div class="prompt-preview">
-      <div class="pp-label">Prompt being sent to Veo (P*)</div>
+      <div class="pp-label">Prompt being sent to generation model (P*)</div>
       <div class="pp-text" id="gen-prompt-preview">—</div>
     </div>
 
@@ -319,7 +319,7 @@
       </div>
       <div class="progress-meta">
         <span id="gen-elapsed">0s elapsed</span>
-        <span id="gen-polls">Polling Veo API...</span>
+        <span id="gen-polls">Polling generation API...</span>
       </div>
     </div>
   </section>
@@ -515,7 +515,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
  */
 async function pollAnalysisJob(jobId, labelEl) {
   const statusMessages = [
-    'Sending frames to Gemini…',
+    'Sending frames to analysis model…',
     'Analyzing temporal patterns…',
     'Enforcing consistency constraints…',
     'Building refined prompt P*…',
@@ -718,7 +718,7 @@ function pollGeneration(jobId, btn) {
   const fillEl = document.getElementById('gen-progress-fill');
 
   const messages = [
-    'Queuing with Veo API…',
+    'Queuing with generation model…',
     'Generating frames…',
     'Enforcing temporal consistency…',
     'Rendering video…',
