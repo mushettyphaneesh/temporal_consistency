@@ -1,0 +1,20 @@
+# Local Pipeline — Requirements
+# Install with:  pip install -r local_pipeline/requirements.txt
+
+# ── Frame Extraction ──────────────────────────────────────
+opencv-python
+
+# ── LLaVA / Ollama client ────────────────────────────────
+requests                  # HTTP calls to Ollama REST API
+
+# ── Video Generation (AnimateDiff) ───────────────────────
+torch                     # pip install torch --index-url https://download.pytorch.org/whl/cu121
+torchvision               # match your CUDA version at pytorch.org/get-started
+diffusers>=0.28.0
+transformers>=4.40.0
+accelerate>=0.30.0
+imageio[ffmpeg]
+imageio-ffmpeg
+
+# ── Utilities ─────────────────────────────────────────────
+python-dotenv

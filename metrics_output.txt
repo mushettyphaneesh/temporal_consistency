@@ -1,0 +1,58 @@
+
+======================================================================
+VIDEO PROMPT EXTRACTION - METRICS REPORT
+======================================================================
+Generated: 2026-02-12T19:21:44.023222
+Project: M:\python\ml projects\video_prompt_extraction
+
+----------------------------------------------------------------------
+📊 STORAGE METRICS
+----------------------------------------------------------------------
+  Uploads:         0.62 MB
+  Generated:       16.33 MB
+  Total Storage:   16.95 MB (0.017 GB)
+
+----------------------------------------------------------------------
+📥 UPLOADED VIDEOS
+----------------------------------------------------------------------
+  Total Videos:    2
+  Total Size:      0.62 MB
+  Average Size:    0.31 MB
+
+  Video Details:
+    • m2-res_480p.mp4
+      Size: 0.54 MB | Duration: 4.03s | Resolution: 854x480 | FPS: 30.0
+    • tmplnxotdu9.mp4
+      Size: 0.08 MB | Duration: 1.6s | Resolution: 256x256 | FPS: 10.0
+
+----------------------------------------------------------------------
+📤 GENERATED VIDEOS
+----------------------------------------------------------------------
+  Total Generated: 3
+  Total Size:      16.33 MB
+  Average Size:    5.44 MB
+
+  Video Details:
+    • generated_799a092d.mp4
+      Size: 8.15 MB | Duration: 4.0s | Resolution: 1280x720 | FPS: 24.0
+    • generated_a78c001b.mp4
+      Size: 0.79 MB | Duration: 4.0s | Resolution: 720x1280 | FPS: 24.0
+    • generated_b41c9b61.mp4
+      Size: 7.39 MB | Duration: 4.0s | Resolution: 1280x720 | FPS: 24.0
+
+----------------------------------------------------------------------
+⚡ PERFORMANCE METRICS
+----------------------------------------------------------------------
+  Success Rate:    150.0%
+
+  Input Videos:
+    Count:           2
+    Avg Duration:    2.82s
+    Avg Size:        0.31 MB
+
+  Output Videos:
+    Count:           3
+    Avg Duration:    4.0s
+    Avg Size:        5.44 MB
+
+======================================================================

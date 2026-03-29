@@ -1,0 +1,38 @@
+# ── Secrets ───────────────────────────────────────────────
+.env
+*.env
+.env.*
+!.env.example        # keep the template
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Uploaded & Generated Media ────────────────────────────
+uploads/
+outputs/
+local_pipeline/frames/
+local_pipeline/analysis/
+local_pipeline/outputs/
+*.mp4
+*.avi
+*.mov
+
+# ── Jupyter ───────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

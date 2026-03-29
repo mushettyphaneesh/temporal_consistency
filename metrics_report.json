@@ -1,0 +1,102 @@
+{
+  "report_date": "2026-02-12T19:19:19.081953",
+  "project_root": "M:\\python\\ml projects\\video_prompt_extraction",
+  "uploads": {
+    "total_videos": 2,
+    "total_size_mb": 0.62,
+    "average_size_mb": 0.31,
+    "videos": [
+      {
+        "filename": "m2-res_480p.mp4",
+        "size_mb": 0.54,
+        "fps": 30.0,
+        "total_frames": 121,
+        "duration_seconds": 4.03,
+        "resolution": "854x480",
+        "width": 854,
+        "height": 480,
+        "aspect_ratio": 1.78
+      },
+      {
+        "filename": "tmplnxotdu9.mp4",
+        "size_mb": 0.08,
+        "fps": 10.0,
+        "total_frames": 16,
+        "duration_seconds": 1.6,
+        "resolution": "256x256",
+        "width": 256,
+        "height": 256,
+        "aspect_ratio": 1.0
+      }
+    ]
+  },
+  "outputs": {
+    "total_generated": 3,
+    "total_size_mb": 16.33,
+    "average_size_mb": 5.44,
+    "videos": [
+      {
+        "filename": "generated_799a092d.mp4",
+        "size_mb": 8.15,
+        "fps": 24.0,
+        "total_frames": 96,
+        "duration_seconds": 4.0,
+        "resolution": "1280x720",
+        "width": 1280,
+        "height": 720,
+        "aspect_ratio": 1.78
+      },
+      {
+        "filename": "generated_a78c001b.mp4",
+        "size_mb": 0.79,
+        "fps": 24.0,
+        "total_frames": 96,
+        "duration_seconds": 4.0,
+        "resolution": "720x1280",
+        "width": 720,
+        "height": 1280,
+        "aspect_ratio": 0.56
+      },
+      {
+        "filename": "generated_b41c9b61.mp4",
+        "size_mb": 7.39,
+        "fps": 24.0,
+        "total_frames": 96,
+        "duration_seconds": 4.0,
+        "resolution": "1280x720",
+        "width": 1280,
+        "height": 720,
+        "aspect_ratio": 1.78
+      }
+    ]
+  },
+  "storage": {
+    "uploads_mb": 0.62,
+    "outputs_mb": 16.33,
+    "total_mb": 16.95,
+    "total_gb": 0.017
+  },
+  "performance": {
+    "input_videos": {
+      "count": 2,
+      "avg_duration_sec": 2.82,
+      "avg_fps": 20.0,
+      "avg_size_mb": 0.31
+    },
+    "output_videos": {
+      "count": 3,
+      "avg_duration_sec": 4.0,
+      "avg_fps": 24.0,
+      "avg_size_mb": 5.44
+    },
+    "success_rate": "150.0%"
+  },
+  "estimated_costs": {
+    "note": "These are rough estimates - check actual API pricing",
+    "extractions_count": 2,
+    "generations_count": 3,
+    "estimated_gemini_cost_usd": 0.0002,
+    "estimated_veo_cost_usd": 0.15,
+    "estimated_total_usd": 0.1502
+  }
+}

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temporal Consistency Studio — Analysis-Guided Video Regeneration</title>
+  <meta name="description" content="AI tool that enforces temporal consistency in AI-generated videos through Gemini semantic analysis and Veo regeneration.">
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="13" stroke="url(#lg1)" stroke-width="1.5"/>
+          <path d="M8 10L14 6L20 10V18L14 22L8 18V10Z" stroke="url(#lg2)" stroke-width="1.5" fill="none"/>
+          <circle cx="14" cy="14" r="3" fill="url(#lg1)"/>
+          <defs>
+            <linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28">
+              <stop stop-color="#7c3aed"/>
+              <stop offset="1" stop-color="#06b6d4"/>
+            </linearGradient>
+            <linearGradient id="lg2" x1="0" y1="0" x2="28" y2="28">
+              <stop stop-color="#a78bfa"/>
+              <stop offset="1" stop-color="#38bdf8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-title">Temporal Consistency Studio</span>
+        <span class="logo-sub">Analysis-Guided Video Regeneration</span>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="badge-dot"></span>
+      <span>Eq. 2 · 3 · 4 · 5</span>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+
+  <!-- Pipeline Progress Bar -->
+  <div class="pipeline-bar" id="pipeline-bar">
+    <div class="pipeline-step active" id="ps-1" data-step="1">
+      <div class="step-num">01</div>
+      <div class="step-label">Upload</div>
+    </div>
+    <div class="pipeline-connector" id="pc-1"></div>
+    <div class="pipeline-step" id="ps-2" data-step="2">
+      <div class="step-num">02</div>
+      <div class="step-label">Analysis</div>
+    </div>
+    <div class="pipeline-connector" id="pc-2"></div>
+    <div class="pipeline-step" id="ps-3" data-step="3">
+      <div class="step-num">03</div>
+      <div class="step-label">Refinement</div>
+    </div>
+    <div class="pipeline-connector" id="pc-3"></div>
+    <div class="pipeline-step" id="ps-4" data-step="4">
+      <div class="step-num">04</div>
+      <div class="step-label">Regenerate</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 1: Upload ── -->
+  <section class="card step-card" id="section-upload">
+    <div class="card-header">
+      <div class="step-tag">Step 01</div>
+      <h2>Upload AI-Generated Video</h2>
+      <p class="card-desc">Upload an .mp4 file (up to 100MB). The pipeline will extract 5 evenly-spaced frames for analysis.</p>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dz-inner">
+        <div class="dz-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#dz-grad)" opacity="0.15"/>
+            <path d="M16 28L24 20L32 28" stroke="url(#dz-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 20V36" stroke="url(#dz-grad)" stroke-width="2" stroke-linecap="round"/>
+            <rect x="12" y="12" width="24" height="16" rx="3" fill="none" stroke="url(#dz-grad)" stroke-width="1.5" opacity="0.5"/>
+            <defs>
+              <linearGradient id="dz-grad" x1="0" y1="0" x2="48" y2="48">
+                <stop stop-color="#7c3aed"/>
+                <stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <p class="dz-title">Drag &amp; drop your video here</p>
+        <p class="dz-hint">or <span class="dz-link">click to browse</span> — MP4 up to 100MB</p>
+      </div>
+      <input type="file" id="video-input" accept="video/mp4,video/*" hidden>
+    </div>
+
+    <!-- Video preview -->
+    <div class="video-preview hidden" id="video-preview">
+      <video id="preview-player" muted loop controls></video>
+      <div class="preview-meta">
+        <div class="preview-info">
+          <span class="preview-icon">🎞</span>
+          <div>
+            <div class="preview-name" id="preview-name"></div>
+            <div class="preview-size" id="preview-size"></div>
+          </div>
+        </div>
+        <button class="btn-icon" id="clear-btn" title="Remove video">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Upload progress -->
+    <div class="upload-progress hidden" id="upload-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-label" id="progress-label">Uploading...</div>
+    </div>
+
+    <!-- Analysis polling progress (shown after upload) -->
+    <div class="upload-progress hidden" id="analysis-progress">
+      <div class="progress-bar">
+        <div class="progress-fill animated" id="analysis-progress-fill"></div>
+      </div>
+      <div class="progress-label" id="analysis-progress-label">Analyzing with Gemini…</div>
+    </div>
+
+    <button class="btn-primary" id="analyze-btn" disabled>
+      <span class="btn-content">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 9a6 6 0 1012 0A6 6 0 003 9z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M9 6v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Analyze Temporal Consistency
+      </span>
+      <span class="btn-loading hidden">
+        <span class="spinner"></span>
+        Analyzing with Gemini...
+      </span>
+    </button>
+  </section>
+
+  <!-- ── STEP 2: Analysis Results ── -->
+  <section class="card step-card hidden" id="section-analysis">
+    <div class="card-header">
+      <div class="step-tag">Step 02 · Equations 2, 3, 4</div>
+      <h2>Semantic Analysis Results</h2>
+      <p class="card-desc">Gemini analyzed the video frames and identified scene attributes, temporal inconsistencies, and generated a consistency-enforcing prompt P*.</p>
+    </div>
+
+    <div class="analysis-grid">
+
+      <!-- Refined Prompt P* -->
+      <div class="analysis-card highlight-card">
+        <div class="ac-header">
+          <div class="ac-icon purple">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M3 3h12v12H3V3z" stroke="currentColor" stroke-width="1.5" fill="none" rx="2"/>
+              <path d="M6 6h6M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span>Refined Prompt P* <span class="eq-badge">Eq. 4</span></span>
+          <button class="btn-copy" id="copy-prompt-btn" title="Copy prompt">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="refined-prompt" id="refined-prompt-text">—</div>
+      </div>
+
+      <!-- Scene Description -->
+      <div class="analysis-card">
+        <div class="ac-header">
+          <div class="ac-icon cyan">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <circle cx="6" cy="8" r="1.5" fill="currentColor"/>
+              <path d="M4 14l3-4 3 3 2-2 2 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span>Scene Description <span class="eq-badge">Eq. 2</span></span>
+        </div>
+        <p class="ac-body" id="scene-description">—</p>
+        <div class="ac-meta">
+          <span id="motion-type-badge" class="meta-pill"></span>
+          <span id="lighting-badge" class="meta-pill"></span>
+        </div>
+      </div>
+
+      <!-- Temporal Issues -->
+      <div class="analysis-card">
+        <div class="ac-header">
+          <div class="ac-icon amber">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2L16 15H2L9 2z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+              <path d="M9 7v4M9 13v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span>Temporal Issues Detected <span class="eq-badge">Eq. 3</span></span>
+        </div>
+        <ul class="issues-list" id="temporal-issues">
+          <li class="no-issues">No issues detected</li>
+        </ul>
+      </div>
+
+      <!-- Detected Objects -->
+      <div class="analysis-card">
+        <div class="ac-header">
+          <div class="ac-icon green">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span>Detected Scene Objects</span>
+        </div>
+        <div class="tag-cloud" id="objects-cloud"></div>
+      </div>
+
+    </div>
+
+    <!-- Step 3: Prompt Refinement -->
+    <div class="refinement-panel">
+      <div class="panel-header">
+        <div class="step-tag">Step 03 · Optional</div>
+        <h3>Refine the Prompt</h3>
+        <p>Add feedback to further adjust P* — Gemini will re-analyze with your instructions.</p>
+      </div>
+      <div class="feedback-row">
+        <input type="text" id="feedback-input" class="feedback-input" placeholder="e.g. make lighting warmer, reduce camera shake, make colors more vivid...">
+        <button class="btn-secondary" id="refine-btn">
+          <span class="btn-content">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M14 2L8 8M8 8l-4 6M8 8l6-4M8 8l-6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Refine P*
+          </span>
+          <span class="btn-loading hidden"><span class="spinner sm"></span> Refining...</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STEP 4: Regenerate ── -->
+  <section class="card step-card hidden" id="section-regenerate">
+    <div class="card-header">
+      <div class="step-tag">Step 04 · Equation 5</div>
+      <h2>Regenerate — Temporally Consistent Video</h2>
+      <p class="card-desc">The refined prompt P* is sent to Veo-2 to generate a temporally consistent video. Generation takes 1–3 minutes.</p>
+    </div>
+
+    <div class="gen-options">
+      <div class="option-group">
+        <label class="option-label">Duration</label>
+        <div class="toggle-group" id="duration-group">
+          <button class="toggle-btn active" data-value="4" id="dur-4">4 seconds</button>
+          <button class="toggle-btn" data-value="8" id="dur-8">8 seconds</button>
+        </div>
+      </div>
+      <div class="option-group">
+        <label class="option-label">Aspect Ratio</label>
+        <div class="toggle-group" id="aspect-group">
+          <button class="toggle-btn active" data-value="16:9" id="ar-169">
+            <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+              <rect x="0.75" y="0.75" width="14.5" height="8.5" rx="1.25" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            16:9
+          </button>
+          <button class="toggle-btn" data-value="9:16" id="ar-916">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+              <rect x="0.75" y="0.75" width="8.5" height="14.5" rx="1.25" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            9:16
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt preview before generation -->
+    <div class="prompt-preview">
+      <div class="pp-label">Prompt being sent to Veo (P*)</div>
+      <div class="pp-text" id="gen-prompt-preview">—</div>
+    </div>
+
+    <button class="btn-primary btn-generate" id="regenerate-btn">
+      <span class="btn-content">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2v4l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 6A7 7 0 117 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Regenerate Video — Equation 5
+      </span>
+      <span class="btn-loading hidden">
+        <span class="spinner"></span>
+        <span id="gen-status-text">Queuing generation...</span>
+      </span>
+    </button>
+
+    <!-- Generation progress -->
+    <div class="gen-progress hidden" id="gen-progress">
+      <div class="progress-bar">
+        <div class="progress-fill animated" id="gen-progress-fill"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="gen-elapsed">0s elapsed</span>
+        <span id="gen-polls">Polling Veo API...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RESULT ── -->
+  <section class="card step-card hidden" id="section-result">
+    <div class="card-header">
+      <div class="step-tag success">✓ Complete</div>
+      <h2>Temporally Consistent Video</h2>
+      <p class="card-desc">Your regenerated video with enforced temporal consistency is ready.</p>
+    </div>
+
+    <div class="result-video-container">
+      <video id="result-video" controls loop></video>
+    </div>
+
+    <div class="result-actions">
+      <a id="download-link" class="btn-primary" download>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v9M6 9l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 14h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Download Video
+      </a>
+      <button class="btn-secondary" onclick="startOver()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 8a6 6 0 016-6 6 6 0 014.8 2.4L15 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M14 5v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Start Over
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast notifications -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ───────────────────────────────────────────────────────────────────────────
+// State
+// ───────────────────────────────────────────────────────────────────────────
+let uploadedFile = null;
+let currentVideoPath = null;
+let currentPrompt = null;
+let selectedDuration = 4;
+let selectedAspect = '16:9';
+let pollInterval = null;
+let genStartTime = null;
+
+// ───────────────────────────────────────────────────────────────────────────
+// Drag & Drop / File Selection
+// ───────────────────────────────────────────────────────────────────────────
+const dropzone = document.getElementById('dropzone');
+const videoInput = document.getElementById('video-input');
+
+dropzone.addEventListener('click', () => videoInput.click());
+
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzone.classList.add('drag-over');
+});
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+videoInput.addEventListener('change', (e) => {
+  if (e.target.files.length) handleFile(e.target.files[0]);
+});
+
+document.getElementById('clear-btn').addEventListener('click', clearFile);
+
+function handleFile(file) {
+  if (!file.type.startsWith('video/')) {
+    showToast('Please select a video file (.mp4 or .mov)', 'error');
+    return;
+  }
+  if (file.size > 100 * 1024 * 1024) {
+    showToast('File too large. Maximum 100MB.', 'error');
+    return;
+  }
+  uploadedFile = file;
+
+  // Preview
+  const url = URL.createObjectURL(file);
+  document.getElementById('preview-player').src = url;
+  document.getElementById('preview-name').textContent = file.name;
+  document.getElementById('preview-size').textContent = formatBytes(file.size);
+
+  dropzone.classList.add('hidden');
+  document.getElementById('video-preview').classList.remove('hidden');
+  document.getElementById('analyze-btn').disabled = false;
+}
+
+function clearFile() {
+  uploadedFile = null;
+  currentVideoPath = null;
+  const preview = document.getElementById('preview-player');
+  URL.revokeObjectURL(preview.src);
+  preview.src = '';
+  document.getElementById('video-preview').classList.add('hidden');
+  dropzone.classList.remove('hidden');
+  document.getElementById('analyze-btn').disabled = true;
+  videoInput.value = '';
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Step 2: Analyze
+// ───────────────────────────────────────────────────────────────────────────
+document.getElementById('analyze-btn').addEventListener('click', async () => {
+  if (!uploadedFile) return;
+
+  const btn = document.getElementById('analyze-btn');
+  setBtnLoading(btn, true);
+
+  const formData = new FormData();
+  formData.append('video', uploadedFile);
+
+  // Show upload progress
+  const uploadProgressEl = document.getElementById('upload-progress');
+  const fillEl = document.getElementById('progress-fill');
+  const labelEl = document.getElementById('progress-label');
+  uploadProgressEl.classList.remove('hidden');
+
+  try {
+    // Phase 1: upload file via XHR with progress tracking
+    const jobData = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/analyze');
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          fillEl.style.width = pct + '%';
+          labelEl.textContent = `Uploading… ${pct}%`;
+        }
+      });
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch(e) { reject(e); }
+      };
+      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.send(formData);
+    });
+
+    uploadProgressEl.classList.add('hidden');
+
+    if (jobData.error) {
+      showToast(jobData.error, 'error');
+      setBtnLoading(btn, false);
+      return;
+    }
+
+    // Phase 2: poll for analysis result
+    const analysisProgressEl = document.getElementById('analysis-progress');
+    const analysisLabelEl = document.getElementById('analysis-progress-label');
+    analysisProgressEl.classList.remove('hidden');
+
+    const data = await pollAnalysisJob(jobData.job_id, analysisLabelEl);
+    analysisProgressEl.classList.add('hidden');
+
+    if (!data) { setBtnLoading(btn, false); return; } // error already shown via toast
+
+    currentVideoPath = data.video_path;
+    renderAnalysis(data);
+    document.getElementById('section-analysis').classList.remove('hidden');
+    document.getElementById('section-regenerate').classList.remove('hidden');
+    document.getElementById('section-analysis').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveStep(2);
+
+  } catch (err) {
+    showToast('Analysis failed: ' + err.message, 'error');
+    document.getElementById('upload-progress').classList.add('hidden');
+    document.getElementById('analysis-progress').classList.add('hidden');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+});
+
+/**
+ * Poll /analyze_status/<job_id> every 3 seconds until done or error.
+ * Updates labelEl with live server-side status messages.
+ * Returns the result object on success, null on error.
+ */
+async function pollAnalysisJob(jobId, labelEl) {
+  const statusMessages = [
+    'Sending frames to Gemini…',
+    'Analyzing temporal patterns…',
+    'Enforcing consistency constraints…',
+    'Building refined prompt P*…',
+    'Almost done…'
+  ];
+  let tick = 0;
+
+  return new Promise((resolve) => {
+    const interval = setInterval(async () => {
+      tick++;
+      try {
+        const res = await fetch(`/analyze_status/${jobId}`);
+        const data = await res.json();
+
+        // Show the live server message, cycling through UI hints too
+        if (labelEl) {
+          labelEl.textContent = data.message || statusMessages[Math.min(Math.floor(tick/3), statusMessages.length-1)];
+        }
+
+        if (data.status === 'done') {
+          clearInterval(interval);
+          resolve(data.result);
+        } else if (data.status === 'error') {
+          clearInterval(interval);
+          showToast(data.error || 'Analysis failed', 'error');
+          resolve(null);
+        }
+      } catch (e) {
+        // network blip — keep polling
+      }
+    }, 3000);
+  });
+}
+
+function renderAnalysis(data) {
+  // Refined prompt P*
+  const prompt = data.refined_prompt || '—';
+  document.getElementById('refined-prompt-text').textContent = prompt;
+  document.getElementById('gen-prompt-preview').textContent = prompt;
+  currentPrompt = prompt;
+
+  // Scene description
+  document.getElementById('scene-description').textContent = data.scene_description || '—';
+
+  // Meta pills
+  const motionBadge = document.getElementById('motion-type-badge');
+  const lightingBadge = document.getElementById('lighting-badge');
+  if (data.motion_type && data.motion_type !== 'unknown') {
+    motionBadge.textContent = '📷 ' + data.motion_type;
+    motionBadge.style.display = 'inline-block';
+  }
+  if (data.lighting_cues && data.lighting_cues !== 'unknown') {
+    lightingBadge.textContent = '💡 ' + data.lighting_cues;
+    lightingBadge.style.display = 'inline-block';
+  }
+
+  // Temporal issues
+  const issuesList = document.getElementById('temporal-issues');
+  const issues = data.temporal_issues || [];
+  if (issues.length > 0) {
+    issuesList.innerHTML = issues.map(iss =>
+      `<li class="issue-item"><span class="issue-dot"></span>${iss}</li>`
+    ).join('');
+  } else {
+    issuesList.innerHTML = '<li class="no-issues">✓ No temporal issues detected</li>';
+  }
+
+  // Objects tag cloud
+  const cloud = document.getElementById('objects-cloud');
+  const objs = data.detected_objects || [];
+  if (objs.length > 0) {
+    cloud.innerHTML = objs.map(o => `<span class="obj-tag">${o}</span>`).join('');
+  } else {
+    cloud.innerHTML = '<span class="obj-tag muted">No objects detected</span>';
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Copy prompt button
+// ───────────────────────────────────────────────────────────────────────────
+document.getElementById('copy-prompt-btn').addEventListener('click', async () => {
+  const text = document.getElementById('refined-prompt-text').textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('copy-prompt-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Copy`, 2000);
+  } catch(e) {
+    showToast('Could not copy to clipboard', 'error');
+  }
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Step 3: Refine Prompt
+// ───────────────────────────────────────────────────────────────────────────
+document.getElementById('refine-btn').addEventListener('click', async () => {
+  if (!currentVideoPath) return;
+
+  const feedback = document.getElementById('feedback-input').value.trim();
+  if (!feedback) {
+    showToast('Please enter refinement feedback first', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('refine-btn');
+  setBtnLoading(btn, true);
+
+  try {
+    const res = await fetch('/refine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ video_path: currentVideoPath, feedback })
+    });
+    const jobData = await res.json();
+
+    if (jobData.error) { showToast(jobData.error, 'error'); return; }
+
+    // Poll for refined result
+    const data = await pollAnalysisJob(jobData.job_id, null);
+    if (data) {
+      renderAnalysis(data);
+      showToast('Prompt P* refined successfully!', 'success');
+      document.getElementById('feedback-input').value = '';
+    }
+  } catch (err) {
+    showToast('Refinement failed: ' + err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Duration / Aspect toggles
+// ───────────────────────────────────────────────────────────────────────────
+document.querySelectorAll('#duration-group .toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#duration-group .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDuration = parseInt(btn.dataset.value);
+  });
+});
+
+document.querySelectorAll('#aspect-group .toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#aspect-group .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedAspect = btn.dataset.value;
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Step 4: Regenerate Video
+// ───────────────────────────────────────────────────────────────────────────
+document.getElementById('regenerate-btn').addEventListener('click', async () => {
+  if (!currentPrompt) {
+    showToast('No prompt available. Please run analysis first.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('regenerate-btn');
+  setBtnLoading(btn, true);
+
+  document.getElementById('gen-progress').classList.remove('hidden');
+  genStartTime = Date.now();
+  setActiveStep(4);
+
+  try {
+    const res = await fetch('/regenerate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: currentPrompt,
+        duration: selectedDuration,
+        aspect_ratio: selectedAspect
+      })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showToast(data.error, 'error');
+      setBtnLoading(btn, false);
+      document.getElementById('gen-progress').classList.add('hidden');
+      return;
+    }
+
+    pollGeneration(data.job_id, btn);
+
+  } catch (err) {
+    showToast('Failed to start generation: ' + err.message, 'error');
+    setBtnLoading(btn, false);
+    document.getElementById('gen-progress').classList.add('hidden');
+  }
+});
+
+function pollGeneration(jobId, btn) {
+  let pollCount = 0;
+  const statusText = document.getElementById('gen-status-text');
+  const elapsedEl = document.getElementById('gen-elapsed');
+  const pollsEl = document.getElementById('gen-polls');
+  const fillEl = document.getElementById('gen-progress-fill');
+
+  const messages = [
+    'Queuing with Veo API…',
+    'Generating frames…',
+    'Enforcing temporal consistency…',
+    'Rendering video…',
+    'Almost done…'
+  ];
+
+  pollInterval = setInterval(async () => {
+    pollCount++;
+    const elapsed = Math.round((Date.now() - genStartTime) / 1000);
+    elapsedEl.textContent = elapsed + 's elapsed';
+    pollsEl.textContent = `Poll ${pollCount}/30`;
+    statusText.textContent = messages[Math.min(Math.floor(pollCount / 6), messages.length - 1)];
+    fillEl.style.width = Math.min(pollCount * 3.3, 95) + '%';
+
+    try {
+      const res = await fetch(`/status/${jobId}`);
+      const data = await res.json();
+
+      if (data.status === 'done') {
+        clearInterval(pollInterval);
+        fillEl.style.width = '100%';
+        showResult(data.video_url);
+        setBtnLoading(btn, false);
+        document.getElementById('gen-progress').classList.add('hidden');
+
+      } else if (data.status === 'error') {
+        clearInterval(pollInterval);
+        showToast('Generation failed: ' + (data.error || 'Unknown error'), 'error');
+        setBtnLoading(btn, false);
+        document.getElementById('gen-progress').classList.add('hidden');
+      }
+
+      if (pollCount >= 30) {
+        clearInterval(pollInterval);
+        showToast('Generation timed out after 5 minutes.', 'error');
+        setBtnLoading(btn, false);
+        document.getElementById('gen-progress').classList.add('hidden');
+      }
+
+    } catch (err) {
+      // Network hiccup — keep polling
+    }
+
+  }, 10000);
+}
+
+function showResult(videoUrl) {
+  const video = document.getElementById('result-video');
+  video.src = videoUrl;
+  document.getElementById('download-link').href = videoUrl;
+  const section = document.getElementById('section-result');
+  section.classList.remove('hidden');
+  section.scrollIntoView({ behavior: 'smooth' });
+  showToast('Video generated successfully!', 'success');
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────────────────────────────────────
+function setBtnLoading(btn, loading) {
+  btn.disabled = loading;
+  const content = btn.querySelector('.btn-content');
+  const loadingEl = btn.querySelector('.btn-loading');
+  if (content) content.classList.toggle('hidden', loading);
+  if (loadingEl) loadingEl.classList.toggle('hidden', !loading);
+}
+
+function setActiveStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const ps = document.getElementById(`ps-${i}`);
+    const pc = document.getElementById(`pc-${i}`);
+    if (i < n) {
+      ps.classList.add('done');
+      ps.classList.remove('active');
+      if (pc) pc.classList.add('done');
+    } else if (i === n) {
+      ps.classList.add('active');
+      ps.classList.remove('done');
+    } else {
+      ps.classList.remove('active', 'done');
+    }
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span><span>${message}</span>`;
+
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('visible'));
+
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 400);
+  }, 5000);
+}
+
+function startOver() {
+  if (pollInterval) clearInterval(pollInterval);
+  location.reload();
+}
+</script>
+</body>
+</html>

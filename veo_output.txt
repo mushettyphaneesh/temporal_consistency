@@ -1,0 +1,17 @@
+﻿Extracting 3 frames from first 3.0s of video...
+Extracted 3 frames
+Analyzing with Gemini...
+
+==================================================
+GENERATED PROMPT:
+==================================================
+A 3-second video of a cartoon man in a blue hoodie and glasses struggling to roll a giant golden coin uphill towards a large, imposing pyramid. The camera is static, showing the man from a medium shot, emphasizing his strained expression and effort. The backdrop is a desert landscape with a sunset sky, creating a mood of futility and Sisyphean effort.
+
+==================================================
+
+==================================================
+GENERATING VIDEO WITH VEO 3.1
+==================================================
+Generating 4s video with Veo 3.1...
+Prompt: A 3-second video of a cartoon man in a blue hoodie and glasses struggling to roll a giant golden coi...
+Error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'allow_adult for personGeneration is currently not supported.', 'status': 'INVALID_ARGUMENT'}}
